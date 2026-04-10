@@ -29,6 +29,12 @@ jobs:
           npm run build --if-present
           npm run test --if-present
 
+      - name: Run database migrations (if DATABASE_URL available)
+        run: npm run prisma:deploy --if-present
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        continue-on-error: true
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
