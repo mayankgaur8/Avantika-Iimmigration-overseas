@@ -6,7 +6,7 @@
 
 export const SITE = {
   name: 'Avantika Immigration & Overseas',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://avantika-immigration.com',
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://avantika-immigration.com',
   tagline: 'Your Global Career & Immigration Partner',
   foundedYear: 2006,
 }

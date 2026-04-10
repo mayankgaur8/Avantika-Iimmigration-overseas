@@ -22,42 +22,53 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
+      - name: Debug workspace before install
+        run: |
+          echo "pwd=$(pwd)"
+          ls -la
+
       - name: Install dependencies
         run: npm ci
 
-      # prisma generate reads only the schema — no DATABASE_URL needed at build time.
-      # next build produces .next/standalone/server.js (output: 'standalone' in next.config.js).
-      # postbuild copies public/ and .next/static/ into the standalone bundle automatically.
-      - name: Build
+      - name: Build (standalone)
         run: npm run build
         env:
           NODE_ENV: production
-          # Surface all required NEXT_PUBLIC_ vars so the build embeds them correctly
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
-          NEXT_PUBLIC_SITE_NAME: ${{ secrets.NEXT_PUBLIC_SITE_NAME }}
-          NEXT_PUBLIC_PHONE_PRIMARY: ${{ secrets.NEXT_PUBLIC_PHONE_PRIMARY }}
-          NEXT_PUBLIC_PHONE_RAW: ${{ secrets.NEXT_PUBLIC_PHONE_RAW }}
-          NEXT_PUBLIC_WHATSAPP_NUMBER: ${{ secrets.NEXT_PUBLIC_WHATSAPP_NUMBER }}
-          NEXT_PUBLIC_EMAIL_PRIMARY: ${{ secrets.NEXT_PUBLIC_EMAIL_PRIMARY }}
-          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
-          NEXT_PUBLIC_BOOKING_URL: ${{ secrets.NEXT_PUBLIC_BOOKING_URL }}
 
-      # Run migrations against the real database after a successful build.
-      # This step is safe to skip if DATABASE_URL is not yet configured.
-      - name: Run database migrations
-        run: npm run prisma:deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        continue-on-error: true
+      - name: Debug Next build output
+        run: |
+          echo "== .next root =="
+          ls -la .next || true
+          echo "== .next/standalone =="
+          ls -la .next/standalone || true
+          echo "== .next/standalone/.next =="
+          ls -la .next/standalone/.next || true
+          echo "== .next/standalone/public =="
+          ls -la .next/standalone/public || true
 
-      # Upload only the standalone bundle — not the full source tree or node_modules.
-      # standalone/ already contains its own trimmed node_modules copy.
+      - name: Verify standalone artifact completeness
+        run: |
+          test -f .next/standalone/server.js
+          test -d .next/standalone/.next/static
+          test -d .next/standalone/public
+          test -f .next/standalone/package.json
+          echo "Standalone artifact verified."
+
+      - name: Prepare deploy artifact
+        run: |
+          rm -rf deploy
+          mkdir -p deploy
+          cp -a .next/standalone/. deploy/
+          echo "== deploy root =="
+          ls -la deploy
+          echo "== deploy .next =="
+          ls -la deploy/.next
+
       - name: Upload standalone artifact
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-standalone
-          path: |
-            .next/standalone
+          path: deploy
           if-no-files-found: error
 
   deploy:
@@ -72,9 +83,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nextjs-standalone
-          # Downloads into the current directory, so server.js lands at ./server.js
-          # which maps to /home/site/wwwroot/server.js on Azure
           path: .
+
+      - name: Debug downloaded artifact
+        run: |
+          echo "pwd=$(pwd)"
+          ls -la
+          test -f server.js
 
       - name: Login to Azure
         uses: azure/login@v2
