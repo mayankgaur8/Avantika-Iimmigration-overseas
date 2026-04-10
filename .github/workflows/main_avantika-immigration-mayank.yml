@@ -22,53 +22,68 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Debug workspace before install
-        run: |
-          echo "pwd=$(pwd)"
-          ls -la
-
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (standalone)
+      # prisma generate reads only the schema — no DATABASE_URL needed at build time.
+      # output: 'standalone' in next.config.js generates .next/standalone/.
+      # postbuild copies public/, .next/static/, and .next/BUILD_ID into the bundle.
+      - name: Build
         run: npm run build
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_SITE_URL:          ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_SITE_NAME:         ${{ secrets.NEXT_PUBLIC_SITE_NAME }}
+          NEXT_PUBLIC_PHONE_PRIMARY:     ${{ secrets.NEXT_PUBLIC_PHONE_PRIMARY }}
+          NEXT_PUBLIC_PHONE_RAW:         ${{ secrets.NEXT_PUBLIC_PHONE_RAW }}
+          NEXT_PUBLIC_WHATSAPP_NUMBER:   ${{ secrets.NEXT_PUBLIC_WHATSAPP_NUMBER }}
+          NEXT_PUBLIC_EMAIL_PRIMARY:     ${{ secrets.NEXT_PUBLIC_EMAIL_PRIMARY }}
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          NEXT_PUBLIC_BOOKING_URL:       ${{ secrets.NEXT_PUBLIC_BOOKING_URL }}
 
-      - name: Debug Next build output
+      # Copy the .deployment file into the standalone bundle so Azure sees it
+      # inside the zip and skips Oryx even if app settings haven't propagated yet.
+      - name: Inject .deployment into standalone bundle
+        run: cp .deployment .next/standalone/.deployment
+
+      - name: Verify standalone bundle
         run: |
-          echo "== .next root =="
-          ls -la .next || true
-          echo "== .next/standalone =="
-          ls -la .next/standalone || true
-          echo "== .next/standalone/.next =="
-          ls -la .next/standalone/.next || true
-          echo "== .next/standalone/public =="
-          ls -la .next/standalone/public || true
+          echo "=== .next/standalone root ==="
+          ls -la .next/standalone/
+          echo "=== .next/standalone/.next ==="
+          ls -la .next/standalone/.next/
+          test -f .next/standalone/server.js            || (echo "MISSING: server.js"       && exit 1)
+          test -f .next/standalone/.next/BUILD_ID       || (echo "MISSING: BUILD_ID"        && exit 1)
+          test -d .next/standalone/.next/static         || (echo "MISSING: .next/static"    && exit 1)
+          test -d .next/standalone/.next/server         || (echo "MISSING: .next/server"    && exit 1)
+          test -d .next/standalone/public               || (echo "MISSING: public"          && exit 1)
+          test -f .next/standalone/package.json         || (echo "MISSING: package.json"    && exit 1)
+          test -f .next/standalone/.deployment          || (echo "MISSING: .deployment"     && exit 1)
+          echo "✓ All required files present."
 
-      - name: Verify standalone artifact completeness
+      # Run migrations after build. Safe to skip if DATABASE_URL is not set.
+      - name: Run database migrations
+        run: npm run prisma:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        continue-on-error: true
+
+      # zip -r preserves dot-prefixed directories (.next/) which Node.js archiver
+      # (used by azure/webapps-deploy internally) silently strips.
+      - name: Create deployment zip
         run: |
-          test -f .next/standalone/server.js
-          test -d .next/standalone/.next/static
-          test -d .next/standalone/public
-          test -f .next/standalone/package.json
-          echo "Standalone artifact verified."
+          cd .next/standalone
+          zip -r ../../deploy.zip . \
+            --exclude "*/.git/*" \
+            --exclude "*/.DS_Store"
+          echo "=== Zip top-level entries ==="
+          unzip -l ../../deploy.zip | grep -E "^\s+[0-9]" | head -30
 
-      - name: Prepare deploy artifact
-        run: |
-          rm -rf deploy
-          mkdir -p deploy
-          cp -a .next/standalone/. deploy/
-          echo "== deploy root =="
-          ls -la deploy
-          echo "== deploy .next =="
-          ls -la deploy/.next
-
-      - name: Upload standalone artifact
+      - name: Upload deploy.zip
         uses: actions/upload-artifact@v4
         with:
-          name: nextjs-standalone
-          path: deploy
+          name: nextjs-deploy
+          path: deploy.zip
           if-no-files-found: error
 
   deploy:
@@ -79,17 +94,18 @@ jobs:
       contents: read
 
     steps:
-      - name: Download standalone artifact
+      - name: Download deploy.zip
         uses: actions/download-artifact@v4
         with:
-          name: nextjs-standalone
-          path: .
+          name: nextjs-deploy
 
-      - name: Debug downloaded artifact
+      - name: Verify zip contains required files
         run: |
-          echo "pwd=$(pwd)"
-          ls -la
-          test -f server.js
+          test -f deploy.zip || (echo "deploy.zip not found" && exit 1)
+          unzip -l deploy.zip | grep "server.js"    || (echo "MISSING in zip: server.js"  && exit 1)
+          unzip -l deploy.zip | grep "BUILD_ID"     || (echo "MISSING in zip: BUILD_ID"   && exit 1)
+          unzip -l deploy.zip | grep ".deployment"  || (echo "MISSING in zip: .deployment" && exit 1)
+          echo "✓ Zip verified."
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -98,9 +114,52 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_78CA99B523CD4605BB6D3C2F010989CA }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3FBCDFFFB2514ACCB562F5A8CC512768 }}
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+      # Disable Oryx BEFORE deployment and set the startup command.
+      # Using az cli directly is more reliable than azure/webapps-deploy for settings.
+      - name: Configure Azure App Service settings
+        uses: azure/cli@v2
         with:
-          app-name: 'avantika-immigration-mayank'
-          slot-name: 'Production'
-          package: .
+          azcliversion: latest
+          inlineScript: |
+            RESOURCE_GROUP=$(az webapp show \
+              --name avantika-immigration-mayank \
+              --query resourceGroup -o tsv)
+
+            az webapp config appsettings set \
+              --name avantika-immigration-mayank \
+              --resource-group $RESOURCE_GROUP \
+              --settings \
+                SCM_DO_BUILD_DURING_DEPLOYMENT=false \
+                ENABLE_ORYX_BUILD=false \
+                NODE_ENV=production \
+              --output none
+
+            az webapp config set \
+              --name avantika-immigration-mayank \
+              --resource-group $RESOURCE_GROUP \
+              --startup-file "node server.js" \
+              --output none
+
+            echo "✓ App settings applied."
+
+      # Deploy the zip using az webapp deploy (not azure/webapps-deploy@v3).
+      # az webapp deploy --type zip uses Kudu's async zip deployment which extracts
+      # the archive as-is, preserving all dot-directories like .next/.
+      - name: Deploy zip to Azure
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            RESOURCE_GROUP=$(az webapp show \
+              --name avantika-immigration-mayank \
+              --query resourceGroup -o tsv)
+
+            az webapp deploy \
+              --name avantika-immigration-mayank \
+              --resource-group $RESOURCE_GROUP \
+              --src-path deploy.zip \
+              --type zip \
+              --async false \
+              --restart true
+
+            echo "✓ Deployment complete."
