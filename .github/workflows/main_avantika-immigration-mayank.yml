@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - avantika-immigration-mayank
+name: Build and deploy Next.js to Azure Web App
 
 on:
   push:
@@ -13,47 +10,72 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: 'npm'
 
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Run database migrations (if DATABASE_URL available)
-        run: npm run prisma:deploy --if-present
+      # prisma generate reads only the schema — no DATABASE_URL needed at build time.
+      # next build produces .next/standalone/server.js (output: 'standalone' in next.config.js).
+      # postbuild copies public/ and .next/static/ into the standalone bundle automatically.
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+          # Surface all required NEXT_PUBLIC_ vars so the build embeds them correctly
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_SITE_NAME: ${{ secrets.NEXT_PUBLIC_SITE_NAME }}
+          NEXT_PUBLIC_PHONE_PRIMARY: ${{ secrets.NEXT_PUBLIC_PHONE_PRIMARY }}
+          NEXT_PUBLIC_PHONE_RAW: ${{ secrets.NEXT_PUBLIC_PHONE_RAW }}
+          NEXT_PUBLIC_WHATSAPP_NUMBER: ${{ secrets.NEXT_PUBLIC_WHATSAPP_NUMBER }}
+          NEXT_PUBLIC_EMAIL_PRIMARY: ${{ secrets.NEXT_PUBLIC_EMAIL_PRIMARY }}
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          NEXT_PUBLIC_BOOKING_URL: ${{ secrets.NEXT_PUBLIC_BOOKING_URL }}
+
+      # Run migrations against the real database after a successful build.
+      # This step is safe to skip if DATABASE_URL is not yet configured.
+      - name: Run database migrations
+        run: npm run prisma:deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         continue-on-error: true
 
-      - name: Upload artifact for deployment job
+      # Upload only the standalone bundle — not the full source tree or node_modules.
+      # standalone/ already contains its own trimmed node_modules copy.
+      - name: Upload standalone artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: nextjs-standalone
+          path: |
+            .next/standalone
+          if-no-files-found: error
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download standalone artifact
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
+          name: nextjs-standalone
+          # Downloads into the current directory, so server.js lands at ./server.js
+          # which maps to /home/site/wwwroot/server.js on Azure
+          path: .
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -61,11 +83,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_78CA99B523CD4605BB6D3C2F010989CA }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3FBCDFFFB2514ACCB562F5A8CC512768 }}
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'avantika-immigration-mayank'
           slot-name: 'Production'
           package: .
-          
