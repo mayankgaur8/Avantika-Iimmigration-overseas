@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  consultation_booked
+  converted
+  closed
+}
+
+enum CrmSyncStatus {
+  pending
+  synced
+  failed
+}
+
+enum ActivityType {
+  created
+  status_changed
+  note_added
+  crm_sync
+  email_sent
+  email_failed
+  assigned_consultant
+  admin_update
+}
+
+enum AdminRole {
+  admin
+  staff
+}
+
+model Lead {
+  id                  String             @id @default(cuid())
+  externalId          String             @unique
+  name                String
+  email               String
+  phone               String
+  source              String
+  serviceInterest     String
+  destinationInterest String?
+  message             String?
+  preferredCallback   String?
+  assignedConsultant  String?
+  notes               String?
+  status              LeadStatus         @default(new)
+  leadType            String             @default("consultation")
+  leadMagnet          String?
+  consent             Boolean            @default(false)
+  pageUrl             String?
+  pagePath            String?
+  pageTitle           String?
+  referrer            String?
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  utmTerm             String?
+  utmContent          String?
+  gclid               String?
+  fbclid              String?
+  timezone            String?
+  viewport            String?
+  clientId            String?
+  userAgent           String?
+  crmSyncStatus       CrmSyncStatus      @default(pending)
+  crmProvider         String?
+  crmExternalId       String?
+  crmLastSyncedAt     DateTime?
+  crmLastError        String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  activities          LeadActivity[]
+}
+
+model EligibilitySubmission {
+  id                  String             @id @default(cuid())
+  externalId          String             @unique
+  name                String
+  email               String
+  phone               String
+  currentCountry      String
+  targetCountry       String
+  interestedService   String
+  education           String
+  workExperience      String
+  englishScore        String?
+  budget              String?
+  timeline            String?
+  goals               String?
+  score               Int
+  level               String
+  recommendedPathways String[]
+  source              String
+  leadType            String             @default("eligibility")
+  consent             Boolean            @default(false)
+  pageUrl             String?
+  pagePath            String?
+  pageTitle           String?
+  referrer            String?
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  utmTerm             String?
+  utmContent          String?
+  gclid               String?
+  fbclid              String?
+  timezone            String?
+  viewport            String?
+  clientId            String?
+  userAgent           String?
+  crmSyncStatus       CrmSyncStatus      @default(pending)
+  crmProvider         String?
+  crmExternalId       String?
+  crmLastSyncedAt     DateTime?
+  crmLastError        String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  activities          LeadActivity[]
+}
+
+model NewsletterSubscriber {
+  id              String        @id @default(cuid())
+  email           String        @unique
+  source          String
+  status          String        @default("active")
+  pageUrl         String?
+  pagePath        String?
+  pageTitle       String?
+  referrer        String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmTerm         String?
+  utmContent      String?
+  gclid           String?
+  fbclid          String?
+  timezone        String?
+  viewport        String?
+  clientId        String?
+  userAgent       String?
+  crmSyncStatus   CrmSyncStatus @default(pending)
+  crmProvider     String?
+  crmExternalId   String?
+  crmLastSyncedAt DateTime?
+  crmLastError    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model BookingRequest {
+  id                  String        @id @default(cuid())
+  externalId          String        @unique
+  name                String
+  email               String
+  phone               String
+  preferredDate       String?
+  preferredTime       String?
+  consultationMode    String?
+  notes               String?
+  source              String
+  serviceInterest     String?
+  destinationInterest String?
+  calendlyUrl         String?
+  status              String        @default("pending")
+  pageUrl             String?
+  pagePath            String?
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  clientId            String?
+  userAgent           String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  activities          LeadActivity[]
+}
+
+model ContactMessage {
+  id              String   @id @default(cuid())
+  externalId      String   @unique
+  name            String
+  email           String
+  phone           String?
+  subject         String?
+  message         String
+  source          String
+  pageUrl         String?
+  pagePath        String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  clientId        String?
+  userAgent       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LeadActivity {
+  id                      String                 @id @default(cuid())
+  leadId                  String?
+  eligibilitySubmissionId String?
+  bookingRequestId        String?
+  adminUserId             String?
+  type                    ActivityType
+  message                 String
+  metadata                Json?
+  createdAt               DateTime               @default(now())
+  lead                    Lead?                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  eligibilitySubmission   EligibilitySubmission? @relation(fields: [eligibilitySubmissionId], references: [id], onDelete: Cascade)
+  bookingRequest          BookingRequest?        @relation(fields: [bookingRequestId], references: [id], onDelete: Cascade)
+  adminUser               AdminUser?             @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  @@index([leadId])
+  @@index([eligibilitySubmissionId])
+  @@index([bookingRequestId])
+}
+
+model AdminUser {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  role         AdminRole      @default(staff)
+  isActive     Boolean        @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  activities   LeadActivity[]
+}

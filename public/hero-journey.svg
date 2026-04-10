@@ -1,0 +1,330 @@
+<svg width="920" height="560" viewBox="0 0 920 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @keyframes float {
+        0%,100% { transform: translateY(0px); }
+        50%      { transform: translateY(-10px); }
+      }
+      @keyframes pulse-ring {
+        0%   { r: 10; opacity: 0.8; }
+        100% { r: 28; opacity: 0; }
+      }
+      @keyframes dash {
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes plane-fly {
+        0%   { offset-distance: 0%;   opacity: 0; }
+        5%   { opacity: 1; }
+        95%  { opacity: 1; }
+        100% { offset-distance: 100%; opacity: 0; }
+      }
+      @keyframes twinkle {
+        0%,100% { opacity: 0.2; }
+        50%     { opacity: 1; }
+      }
+      @keyframes badge-pop {
+        0%   { transform: scale(0.8); opacity: 0; }
+        60%  { transform: scale(1.05); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      @keyframes shimmer {
+        0%   { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      @keyframes counter-up {
+        0%   { opacity: 0; transform: translateY(6px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .float-group { animation: float 5s ease-in-out infinite; }
+      .float-slow   { animation: float 7s ease-in-out infinite 1s; }
+      .twinkle-1    { animation: twinkle 2s ease-in-out infinite; }
+      .twinkle-2    { animation: twinkle 2.8s ease-in-out infinite 0.6s; }
+      .twinkle-3    { animation: twinkle 1.9s ease-in-out infinite 1.2s; }
+      .badge-anim   { animation: badge-pop 0.7s cubic-bezier(.22,.68,0,1.5) both; }
+      .badge-anim-2 { animation: badge-pop 0.7s cubic-bezier(.22,.68,0,1.5) 0.15s both; }
+      .badge-anim-3 { animation: badge-pop 0.7s cubic-bezier(.22,.68,0,1.5) 0.30s both; }
+      .counter-anim { animation: counter-up 0.6s ease 0.4s both; }
+    </style>
+
+    <!-- Radial glow for globe -->
+    <radialGradient id="globe-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#1e4a8a"/>
+      <stop offset="100%" stop-color="#0a1f3d"/>
+    </radialGradient>
+
+    <!-- Ocean fill -->
+    <radialGradient id="ocean" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#1e5fa3"/>
+      <stop offset="100%" stop-color="#122f60"/>
+    </radialGradient>
+
+    <!-- Card gradient -->
+    <linearGradient id="card-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1e3a6a"/>
+      <stop offset="100%" stop-color="#132952"/>
+    </linearGradient>
+
+    <!-- Gold gradient -->
+    <linearGradient id="gold-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+
+    <!-- Green gradient -->
+    <linearGradient id="green-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+
+    <!-- Shimmer overlay -->
+    <linearGradient id="shimmer-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="white" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Clip for globe -->
+    <clipPath id="globe-clip">
+      <circle cx="460" cy="248" r="195"/>
+    </clipPath>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-sm" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- Plane motion path -->
+    <path id="flight-path-1" d="M200,340 C260,240 360,160 460,180 C560,200 660,220 730,200"/>
+    <path id="flight-path-2" d="M180,200 C260,260 360,300 460,280 C540,265 620,300 720,340"/>
+  </defs>
+
+  <!-- ─── Background ─────────────────────────────────────────────── -->
+  <rect width="920" height="560" rx="28" fill="#0d1f3c"/>
+
+  <!-- Subtle grid -->
+  <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+    <path d="M48 0L0 0 0 48" fill="none" stroke="white" stroke-opacity="0.03" stroke-width="1"/>
+  </pattern>
+  <rect width="920" height="560" rx="28" fill="url(#grid)"/>
+
+  <!-- Background glow orbs -->
+  <circle cx="150" cy="100" r="80" fill="#2563eb" fill-opacity="0.07"/>
+  <circle cx="780" cy="460" r="90" fill="#f59e0b" fill-opacity="0.06"/>
+  <circle cx="800" cy="120" r="60" fill="#8b5cf6" fill-opacity="0.07"/>
+
+  <!-- Stars / particles -->
+  <circle cx="80"  cy="60"  r="1.5" fill="white" class="twinkle-1"/>
+  <circle cx="180" cy="90"  r="1"   fill="white" class="twinkle-2"/>
+  <circle cx="820" cy="80"  r="1.5" fill="white" class="twinkle-3"/>
+  <circle cx="860" cy="200" r="1"   fill="white" class="twinkle-1"/>
+  <circle cx="50"  cy="380" r="1.5" fill="white" class="twinkle-2"/>
+  <circle cx="870" cy="420" r="1"   fill="white" class="twinkle-3"/>
+  <circle cx="140" cy="480" r="1"   fill="white" class="twinkle-1"/>
+  <circle cx="750" cy="500" r="1.5" fill="white" class="twinkle-2"/>
+
+  <!-- ─── Globe ──────────────────────────────────────────────────── -->
+  <g class="float-group">
+    <!-- Globe base -->
+    <circle cx="460" cy="248" r="195" fill="url(#globe-bg)" filter="url(#glow)"/>
+
+    <!-- Ocean fill -->
+    <circle cx="460" cy="248" r="190" fill="url(#ocean)"/>
+
+    <!-- Lat/lon grid lines -->
+    <g clip-path="url(#globe-clip)" stroke="white" stroke-opacity="0.08" stroke-width="1.2" fill="none">
+      <!-- Latitude lines -->
+      <ellipse cx="460" cy="248" rx="190" ry="50"/>
+      <ellipse cx="460" cy="248" rx="190" ry="100"/>
+      <ellipse cx="460" cy="248" rx="190" ry="145"/>
+      <ellipse cx="460" cy="248" rx="190" ry="180"/>
+      <!-- Longitude lines -->
+      <ellipse cx="460" cy="248" rx="50"  ry="190"/>
+      <ellipse cx="460" cy="248" rx="100" ry="190"/>
+      <ellipse cx="460" cy="248" rx="145" ry="190"/>
+      <ellipse cx="460" cy="248" rx="180" ry="190"/>
+    </g>
+
+    <!-- Continents (simplified shapes) -->
+    <g clip-path="url(#globe-clip)" fill="#2d6fa8" fill-opacity="0.9">
+      <!-- North America -->
+      <path d="M290 148 C278 140 262 148 258 162 C252 178 260 198 272 208 C285 220 298 228 308 240 C318 252 320 268 314 280 C308 292 300 300 295 315 L320 320 C326 308 330 298 340 288 C350 278 362 272 370 258 C378 244 376 228 368 215 C360 202 348 195 342 180 C336 165 340 150 350 140 C338 134 320 142 310 148 Z"/>
+      <!-- South America -->
+      <path d="M330 340 C318 346 312 362 316 378 C320 394 332 405 338 418 C344 432 344 448 336 460 L356 464 C362 452 362 436 358 422 C354 408 344 398 342 384 C340 370 346 358 354 350 C348 342 338 336 330 340 Z"/>
+      <!-- Europe -->
+      <path d="M430 128 C420 122 408 126 402 138 C396 150 400 164 410 170 C404 176 398 184 402 194 C406 204 418 208 428 204 C438 200 444 190 442 180 C448 188 456 194 466 190 C476 186 480 174 474 166 C468 158 456 156 450 162 C448 152 444 140 430 128 Z"/>
+      <!-- Africa -->
+      <path d="M430 210 C418 206 408 214 406 228 C404 242 410 256 408 270 C406 284 398 296 398 312 C398 328 406 342 416 352 C426 362 438 366 448 360 C458 354 462 340 460 326 C458 312 450 300 450 286 C450 272 458 260 462 248 C466 236 466 222 458 214 C450 206 440 208 430 210 Z"/>
+      <!-- Asia -->
+      <path d="M490 120 C478 116 466 122 462 134 C458 146 464 158 474 162 C484 166 496 162 502 152 C514 156 528 154 536 144 C544 134 542 120 532 114 C522 108 510 112 502 120 C498 116 494 118 490 120 Z M510 165 C498 162 488 170 488 182 C488 194 498 202 510 200 C522 198 528 188 526 178 C524 168 518 162 510 165 Z M545 140 C535 138 527 146 529 156 C531 166 541 172 551 168 C561 164 565 154 561 146 C557 138 551 140 545 140 Z"/>
+      <!-- Australia -->
+      <path d="M570 300 C558 294 546 298 542 310 C538 322 544 336 554 340 C564 344 576 338 580 328 C584 318 578 306 570 300 Z"/>
+    </g>
+
+    <!-- Globe rim highlight -->
+    <circle cx="460" cy="248" r="190" fill="none" stroke="white" stroke-opacity="0.15" stroke-width="2"/>
+    <circle cx="460" cy="248" r="190" fill="none" stroke="white" stroke-opacity="0.05" stroke-width="6"/>
+  </g>
+
+  <!-- ─── Destination pins with pulse rings ────────────────────── -->
+  <!-- Canada -->
+  <g class="float-group">
+    <circle cx="296" cy="185" r="6" fill="#f59e0b" filter="url(#glow-sm)"/>
+    <circle cx="296" cy="185" r="10" fill="none" stroke="#f59e0b" stroke-opacity="0.5" stroke-width="1.5">
+      <animate attributeName="r" values="6;22;6" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <text x="296" y="172" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="system-ui">CA</text>
+  </g>
+
+  <!-- UK -->
+  <g class="float-group">
+    <circle cx="428" cy="155" r="6" fill="#60a5fa" filter="url(#glow-sm)"/>
+    <circle cx="428" cy="155" r="10" fill="none" stroke="#60a5fa" stroke-opacity="0.5" stroke-width="1.5">
+      <animate attributeName="r" values="6;20;6" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <text x="428" y="142" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="system-ui">UK</text>
+  </g>
+
+  <!-- Germany -->
+  <g class="float-group">
+    <circle cx="460" cy="162" r="6" fill="#a78bfa" filter="url(#glow-sm)"/>
+    <circle cx="460" cy="162" r="10" fill="none" stroke="#a78bfa" stroke-opacity="0.5" stroke-width="1.5">
+      <animate attributeName="r" values="6;22;6" dur="2.8s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="2.8s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <text x="460" y="149" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="system-ui">DE</text>
+  </g>
+
+  <!-- Australia -->
+  <g class="float-group">
+    <circle cx="574" cy="308" r="6" fill="#34d399" filter="url(#glow-sm)"/>
+    <circle cx="574" cy="308" r="10" fill="none" stroke="#34d399" stroke-opacity="0.5" stroke-width="1.5">
+      <animate attributeName="r" values="6;20;6" dur="3.2s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="3.2s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <text x="574" y="295" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="system-ui">AU</text>
+  </g>
+
+  <!-- UAE -->
+  <g class="float-group">
+    <circle cx="516" cy="230" r="6" fill="#fb923c" filter="url(#glow-sm)"/>
+    <circle cx="516" cy="230" r="10" fill="none" stroke="#fb923c" stroke-opacity="0.5" stroke-width="1.5">
+      <animate attributeName="r" values="6;18;6" dur="2.6s" begin="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="2.6s" begin="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <text x="516" y="217" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="system-ui">UAE</text>
+  </g>
+
+  <!-- ─── Animated Flight Arcs ─────────────────────────────────── -->
+  <!-- Arc: India -> Canada -->
+  <path d="M510 260 C440 180 340 150 296 185" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.6">
+    <animate attributeName="stroke-dashoffset" from="200" to="0" dur="3s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Arc: India -> Australia -->
+  <path d="M510 260 C540 280 560 290 574 308" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.6">
+    <animate attributeName="stroke-dashoffset" from="200" to="0" dur="2.5s" begin="1s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Arc: India -> UK -->
+  <path d="M510 260 C480 210 452 175 428 155" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.6">
+    <animate attributeName="stroke-dashoffset" from="200" to="0" dur="2.8s" begin="0.5s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- India origin dot -->
+  <g class="float-group">
+    <circle cx="510" cy="260" r="7" fill="#f59e0b"/>
+    <circle cx="510" cy="260" r="4" fill="white"/>
+    <text x="510" y="277" text-anchor="middle" fill="white" font-size="9" font-weight="bold" font-family="system-ui" fill-opacity="0.8">INDIA</text>
+  </g>
+
+  <!-- ─── Animated Airplane 1 ──────────────────────────────────── -->
+  <g>
+    <animateMotion dur="6s" repeatCount="indefinite" rotate="auto">
+      <mpath href="#flight-path-1"/>
+    </animateMotion>
+    <path d="M0,-6 L4,0 L0,2 L-4,0 Z" fill="#f59e0b" opacity="0.9"/>
+  </g>
+
+  <!-- ─── Animated Airplane 2 ──────────────────────────────────── -->
+  <g>
+    <animateMotion dur="8s" begin="3s" repeatCount="indefinite" rotate="auto">
+      <mpath href="#flight-path-2"/>
+    </animateMotion>
+    <path d="M0,-5 L3.5,0 L0,1.5 L-3.5,0 Z" fill="#60a5fa" opacity="0.85"/>
+  </g>
+
+  <!-- ─── Bottom Stats Cards ────────────────────────────────────── -->
+  <!-- Card 1: Visas Approved -->
+  <g class="badge-anim" style="transform-origin: 160px 460px">
+    <rect x="60" y="422" width="200" height="80" rx="16" fill="url(#card-grad)" filter="url(#card-shadow)"/>
+    <rect x="60" y="422" width="200" height="80" rx="16" fill="none" stroke="#2a5298" stroke-width="1"/>
+    <!-- Shimmer -->
+    <rect x="60" y="422" width="200" height="80" rx="16" fill="url(#shimmer-grad)">
+      <animate attributeName="x" from="-140" to="260" dur="3s" begin="1s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="76" y="438" width="32" height="32" rx="8" fill="#f59e0b" fill-opacity="0.2"/>
+    <text x="92" y="459" text-anchor="middle" fill="#f59e0b" font-size="18">✈</text>
+    <text x="120" y="450" fill="white" font-size="20" font-weight="900" font-family="system-ui" class="counter-anim">10K+</text>
+    <text x="120" y="468" fill="#94a3b8" font-size="11" font-family="system-ui">Visas Approved</text>
+    <text x="120" y="486" fill="#64748b" font-size="10" font-family="system-ui">Since 2006</text>
+  </g>
+
+  <!-- Card 2: Success Rate -->
+  <g class="badge-anim-2" style="transform-origin: 460px 460px">
+    <rect x="360" y="422" width="200" height="80" rx="16" fill="url(#card-grad)" filter="url(#card-shadow)"/>
+    <rect x="360" y="422" width="200" height="80" rx="16" fill="none" stroke="#2a5298" stroke-width="1"/>
+    <rect x="376" y="438" width="32" height="32" rx="8" fill="#10b981" fill-opacity="0.2"/>
+    <text x="392" y="458" text-anchor="middle" fill="#34d399" font-size="16">✓</text>
+    <text x="420" y="450" fill="white" font-size="20" font-weight="900" font-family="system-ui" class="counter-anim">92%</text>
+    <text x="420" y="468" fill="#94a3b8" font-size="11" font-family="system-ui">Success Rate</text>
+    <text x="420" y="486" fill="#64748b" font-size="10" font-family="system-ui">Industry Leading</text>
+  </g>
+
+  <!-- Card 3: Countries -->
+  <g class="badge-anim-3" style="transform-origin: 760px 460px">
+    <rect x="660" y="422" width="200" height="80" rx="16" fill="url(#card-grad)" filter="url(#card-shadow)"/>
+    <rect x="660" y="422" width="200" height="80" rx="16" fill="none" stroke="#2a5298" stroke-width="1"/>
+    <rect x="676" y="438" width="32" height="32" rx="8" fill="#3b82f6" fill-opacity="0.2"/>
+    <text x="692" y="458" text-anchor="middle" fill="#60a5fa" font-size="16">🌍</text>
+    <text x="720" y="450" fill="white" font-size="20" font-weight="900" font-family="system-ui" class="counter-anim">45+</text>
+    <text x="720" y="468" fill="#94a3b8" font-size="11" font-family="system-ui">Countries</text>
+    <text x="720" y="486" fill="#64748b" font-size="10" font-family="system-ui">Destinations</text>
+  </g>
+
+  <!-- ─── Floating Notification Badges ─────────────────────────── -->
+  <!-- "Application Approved" badge -->
+  <g class="float-slow badge-anim" style="transform-origin: 780px 170px">
+    <rect x="695" y="148" width="188" height="50" rx="12" fill="#0f2440" stroke="#1e4a8a" stroke-width="1.5" filter="url(#card-shadow)"/>
+    <circle cx="720" cy="173" r="12" fill="#10b981" fill-opacity="0.2"/>
+    <text x="720" y="178" text-anchor="middle" fill="#34d399" font-size="13">✓</text>
+    <text x="740" y="167" fill="white" font-size="11" font-weight="700" font-family="system-ui">Canada PR</text>
+    <text x="740" y="182" fill="#64748b" font-size="10" font-family="system-ui">Application Approved</text>
+  </g>
+
+  <!-- "Free Assessment" badge -->
+  <g class="float-slow badge-anim-2" style="transform-origin: 145px 290px">
+    <rect x="32" y="268" width="168" height="44" rx="12" fill="#0f2440" stroke="#1e4a8a" stroke-width="1.5" filter="url(#card-shadow)"/>
+    <circle cx="56" cy="290" r="10" fill="#f59e0b" fill-opacity="0.2"/>
+    <text x="56" y="295" text-anchor="middle" fill="#fbbf24" font-size="12">★</text>
+    <text x="75" y="285" fill="white" font-size="11" font-weight="700" font-family="system-ui">Rated 4.9/5</text>
+    <text x="75" y="300" fill="#64748b" font-size="10" font-family="system-ui">10,000+ Happy Clients</text>
+  </g>
+
+  <!-- ─── Globe outer glow ring ────────────────────────────────── -->
+  <circle cx="460" cy="248" r="198" fill="none" stroke="#3b82f6" stroke-opacity="0.12" stroke-width="3">
+    <animate attributeName="stroke-opacity" values="0.08;0.2;0.08" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="460" cy="248" r="210" fill="none" stroke="#3b82f6" stroke-opacity="0.06" stroke-width="2">
+    <animate attributeName="stroke-opacity" values="0.04;0.12;0.04" dur="4s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+</svg>

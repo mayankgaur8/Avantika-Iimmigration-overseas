@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Block admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /login
+Disallow: /register
+Disallow: /dashboard/
+
+# Block search result pages if implemented
+Disallow: /*?q=
+Disallow: /*?search=
+
+# Allow sitemap
+Sitemap: https://avantika-immigration.com/sitemap.xml
+
+# Crawl-delay for polite crawlers
+Crawl-delay: 1
