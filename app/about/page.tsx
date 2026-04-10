@@ -112,7 +112,8 @@ export default function AboutPage() {
             <p className="text-navy-200 text-xl leading-relaxed">
               Avantika Immigration & Overseas is a guidance-first consultancy led by Mayank Gaur —
               a technologist with 16+ years of enterprise experience who now helps professionals
-              and students pursue overseas opportunities with clarity and confidence.
+              and students pursue overseas opportunities with clarity, confidence, and direct support
+              from our Aligarh head office.
             </p>
           </div>
         </div>
@@ -207,6 +208,11 @@ export default function AboutPage() {
                   opportunity abroad — you will get guidance that is honest about your chances, practical
                   about your options, and grounded in real industry experience. Not sales tactics. Not
                   inflated numbers. Just real guidance from someone who has built a career the hard way.
+                </p>
+                <p>
+                  Our head office is in Aligarh, and our model is intentionally lean and transparent:
+                  personal consultations, digital document support, and guidance that reflects the way
+                  modern clients actually prefer to work across cities and schedules.
                 </p>
               </div>
 

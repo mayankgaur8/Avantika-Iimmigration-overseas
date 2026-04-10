@@ -22,7 +22,7 @@ export const DEFAULT_SEO = {
     'Australia visa',
     'Germany work permit',
     'IELTS coaching',
-    'visa consultants Gurugram',
+    'visa consultants Aligarh',
   ],
 }
 

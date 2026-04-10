@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE.url,
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon:             [{ url: '/favicon.ico' }, { url: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
     apple:            [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
@@ -109,10 +109,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     email:      CONTACT.emailPrimary,
     address: {
       '@type':           'PostalAddress',
-      streetAddress:     OFFICES[0].address.split(',')[0],
-      addressLocality:   'Gurugram',
-      addressRegion:     'Haryana',
-      postalCode:        '122001',
+      streetAddress:     'G-16 Gulzar Nagar Ramghat Road',
+      addressLocality:   'Aligarh',
+      addressRegion:     'Uttar Pradesh',
+      postalCode:        '202001',
       addressCountry:    'IN',
     },
     geo: {

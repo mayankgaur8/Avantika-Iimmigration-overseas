@@ -12,6 +12,7 @@ import FounderSection from '@/components/sections/FounderSection'
 import ConsultationForm from '@/components/forms/ConsultationForm'
 import InlineLeadCapture from '@/components/sections/InlineLeadCapture'
 import TrustBar from '@/components/sections/TrustBar'
+import { CONTACT, OFFICES } from '@/lib/config/contact'
 import { visaServices } from '@/lib/data/services'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
@@ -165,24 +166,22 @@ export default function HomePage() {
               <div>
                 <span className="inline-flex items-center gap-2 mb-3">
                   <span className="w-6 h-0.5 bg-gold-500 inline-block" />
-                  <span className="text-xs font-bold text-gold-600 uppercase tracking-widest">Our Offices</span>
+                  <span className="text-xs font-bold text-gold-600 uppercase tracking-widest">Our Office</span>
                 </span>
-                <h2 className="text-3xl font-black text-navy-800 mb-6">Find Us Near You</h2>
+                <h2 className="text-3xl font-black text-navy-800 mb-3">Visit or Call Our Aligarh Office</h2>
+                <p className="text-gray-500 mb-6">
+                  We operate from our Aligarh head office and serve clients across India through founder-led online consultations.
+                </p>
               </div>
 
-              {[
-                { city: 'Gurugram (HQ)', address: '123, Global Business Park, Sector 15, Gurugram, HR 122001', phone: '+91 98765 43210' },
-                { city: 'Mumbai', address: '456, BKC Corporate Tower, Bandra Kurla Complex, Mumbai 400051', phone: '+91 98765 43211' },
-                { city: 'Bangalore', address: '789, MG Road, Prestige Tower, Bangalore 560001', phone: '+91 98765 43212' },
-                { city: 'Hyderabad', address: '101, Hitech City, Madhapur, Hyderabad 500081', phone: '+91 98765 43213' },
-              ].map((office) => (
+              {OFFICES.map((office) => (
                 <div key={office.city} className="flex gap-4 p-4 bg-gray-50 rounded-xl">
                   <span className="text-2xl mt-1">📍</span>
                   <div>
                     <div className="font-bold text-navy-800 mb-0.5">{office.city}</div>
                     <div className="text-sm text-gray-500 mb-1">{office.address}</div>
-                    <a href={`tel:${office.phone}`} className="text-sm text-navy-700 font-semibold hover:text-gold-600 transition-colors">
-                      {office.phone}
+                    <a href={CONTACT.telUrl} className="text-sm text-navy-700 font-semibold hover:text-gold-600 transition-colors">
+                      {CONTACT.phonePrimary}
                     </a>
                   </div>
                 </div>
