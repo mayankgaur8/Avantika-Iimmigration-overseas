@@ -19,6 +19,13 @@ const CSP = [
 ].join('; ')
 
 const nextConfig = {
+  // ── Azure App Service deployment ───────────────────────────────────────────
+  // Standalone mode packages everything needed to run the server into
+  // .next/standalone/ — no separate `npm install` is required at runtime.
+  // Azure's Oryx build system (and most CI/CD pipelines) set NODE_ENV=production
+  // and never install node_modules on the host; standalone solves that cleanly.
+  output: 'standalone',
+
   reactStrictMode: true,
   compress: true,
   productionBrowserSourceMaps: false,
